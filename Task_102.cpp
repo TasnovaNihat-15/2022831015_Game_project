@@ -121,7 +121,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    destroyWindow();
+
 
     return 0;
 }
