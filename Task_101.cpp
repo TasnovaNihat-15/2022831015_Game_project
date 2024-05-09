@@ -40,6 +40,9 @@ bool activate_window()
     if (!renderer)
     {
         return false;
+
+
+        
     }
 
     return true;
