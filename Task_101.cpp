@@ -6,22 +6,10 @@
 
 int CENTERX = SCREEN_WIDTH / 2;
 int CENTERY = SCREEN_WIDTH / 2;
-int radius = 80;
+int radius = 120;
 
-void MakeSolidCircle(SDL_Renderer* renderer, int centerX, int centerY, int rad)
-{
-    for (int x = -rad; x <= rad; x++)
-    {
-        for (int y = -rad; y <= rad; y++)
-        {
-            if (x * x + y * y <= rad * rad)
-            {
-                SDL_RenderDrawPoint(renderer, centerX + x, centerY + y);
-            }
-        }
-    }
-}
-bool activateSDL(SDL_Window** window, SDL_Renderer** renderer)
+
+bool activateSDL(SDL_Window** window, SDL_Renderer** Renderer)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != NULL)
     {
@@ -30,7 +18,7 @@ bool activateSDL(SDL_Window** window, SDL_Renderer** renderer)
         return false;
     }
 
-    *window = SDL_CreateWindow("MADE BY TASNOVA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+    *window = SDL_CreateWindow("CREATED BY TASNOVA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
 
     if (*window == NULL)
     {
@@ -39,9 +27,9 @@ bool activateSDL(SDL_Window** window, SDL_Renderer** renderer)
         return false;
     }
 
-    *renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    *Renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
-    if (*renderer == 0)
+    if (*Renderer == 0)
     {
         printf("ERROR INITIALIZING RENDERER!");
 
@@ -49,6 +37,19 @@ bool activateSDL(SDL_Window** window, SDL_Renderer** renderer)
     }
 
     return true;
+}
+void MakeCircle(SDL_Renderer* Renderer, int centerX, int centerY, int rad)
+{
+    for (int x = -rad; x <= rad; x++)
+    {
+        for (int y = -rad; y <= rad; y++)
+        {
+            if (x * x + y * y <= rad * rad)
+            {
+                SDL_RenderDrawPoint(Renderer, centerX + x, centerY + y);
+            }
+        }
+    }
 }
 int main(int argc, char* argv[])
 {

@@ -5,20 +5,13 @@
 #include<math.h>
 
 int SCREEN_WIDTH = 640;
-
 int SCREEN_HEIGHT = 640;
-
-SDL_Window* window = NULL;
-
-SDL_Renderer* renderer = NULL;
-
-bool game_running = false;
-
 int radius = 20;
-
 int CENTERX = SCREEN_WIDTH / 2;
-
 int CENTERY = SCREEN_HEIGHT / 2;
+SDL_Window* Window = NULL;
+SDL_Renderer* Renderer = NULL;
+bool game_running = false;
 
 bool activate_window()
 {
@@ -28,16 +21,16 @@ bool activate_window()
         return false;
     }
 
-    window = SDL_CreateWindow("MADE BY TASNOVA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    Window = SDL_CreateWindow("CREATED BY TASNOVA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 
-    if (!window)
+    if (!Window)
     {
         return false;
     }
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    Renderer = SDL_CreateRenderer(Window, -1, SDL_RENDERER_ACCELERATED);
 
-    if (!renderer)
+    if (!Renderer)
     {
         return false;
     }
@@ -45,19 +38,9 @@ bool activate_window()
     return true;
 }
 
-void startup()
-{
-    SDL_SetRenderDrawColor(renderer, 0, 0, 70, 200);
 
-    SDL_RenderClear(renderer);
 
-    SDL_Color color = { 200,0,0,200 };
-
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
-}
-
-void MakeCircle(SDL_Renderer* renderer, int cx, int cy, int radius)
+void MakeCircle(SDL_Renderer* Renderer, int cx, int cy, int radius)
 {
     for (int x = -radius; x <= radius; x++)
     {
@@ -65,12 +48,22 @@ void MakeCircle(SDL_Renderer* renderer, int cx, int cy, int radius)
         {
             if (x * x + y * y <= radius * radius)
             {
-                SDL_RenderDrawPoint(renderer, cx + x, cy + y);
+                SDL_RenderDrawPoint(Renderer, cx + x, cy + y);
             }
         }
     }
 }
+void startup()
+{
+    SDL_SetRenderDrawColor(Renderer, 50, 50, 70, 200);
 
+    SDL_RenderClear(Renderer);
+
+    SDL_Color color = { 200,100,100,200 };
+
+    SDL_SetRenderDrawColor(Renderer, color.r, color.g, color.b, color.a);
+
+}
 void update()
 {
     radius += 5;
@@ -80,27 +73,27 @@ void update()
         radius = 20;
     }
 
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(Renderer);
 
-    SDL_SetRenderDrawColor(renderer, 100, 110, 0, 255);
+    SDL_SetRenderDrawColor(Renderer, 100, 110, 120, 130);
 
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(Renderer);
 
-    SDL_SetRenderDrawColor(renderer, 100, 0, 0, 200);
+    SDL_SetRenderDrawColor(Renderer, 200,100,100, 200);
 }
 
 void render()
 {
-    MakeCircle(renderer, CENTERX, CENTERY, radius);
+    MakeCircle(Renderer, CENTERX, CENTERY, radius);
 
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(Renderer);
 }
 
 void destroyWindow()
 {
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(Renderer);
 
-    SDL_DestroyWindow(window);
+    SDL_DestroyWindow(Window);
 
     SDL_Quit();
 }
