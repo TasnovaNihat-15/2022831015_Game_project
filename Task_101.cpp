@@ -80,7 +80,7 @@ int main(int argc, char* argv[])
 
 
         SDL_SetRenderDrawColor(renderer, 100, 0, 0, 100);
-        MakeSolidCircle(renderer, CENTERX, CENTERY, radius);
+        MakeCircle(renderer, CENTERX, CENTERY, radius);
 
         SDL_RenderPresent(renderer);
     }
