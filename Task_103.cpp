@@ -164,7 +164,7 @@ void collision()
 
     SDL_RenderClear(Renderer);
 
-    SDL_SetRenderDrawColor(Renderer, 300, 150, 75, 35);
+    SDL_SetRenderDrawColor(Renderer, 200, 150, 75, 35);
 
     SDL_RenderDrawRect(Renderer,&r);
 
