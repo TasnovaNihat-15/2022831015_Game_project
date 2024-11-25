@@ -1,95 +1,3 @@
-// #include <SDL2/SDL.h>
-// #include <stdio.h>
-// #include <math.h>
-// #define SCREEN_WIDTH 500
-// #define SCREEN_HEIGHT 500
-
-// int CENTERX = SCREEN_WIDTH / 2;
-// int CENTERY = SCREEN_WIDTH / 2;
-// int radius = 120;
-
-
-// bool activateSDL(SDL_Window** window, SDL_Renderer** Renderer)
-// {
-//     if (SDL_Init(SDL_INIT_VIDEO) != NULL)
-//     {
-//         printf("ERROR INITIALIZING SDL!");
-
-//         return false;
-//     }
-   
-    
-
-//     *window = SDL_CreateWindow("CREATED BY TASNOVA", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-
-//     if (*window == NULL)
-//     {
-//         printf("ERROR INITIALIZING SDL!");
-
-//         return false;
-//     }
-
-//     *Renderer = SDL_CreateRenderer(*window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-
-//     if (*Renderer == 0)
-//     {
-//         printf("ERROR INITIALIZING RENDERER!");
-
-//         return false;
-//     }
-
-//     return true;
-// }
-// void MakeCircle(SDL_Renderer* Renderer, int centerX, int centerY, int rad)
-// {
-//     for (int x = -rad; x <= rad; x++)
-//     {
-//         for (int y = -rad; y <= rad; y++)
-//         {
-//             if (x * x + y * y <= rad * rad)
-//             {
-//                 SDL_RenderDrawPoint(Renderer, centerX + x, centerY + y);
-//             }
-//         }
-//     }
-// }
-// int main(int argc, char* argv[])
-// {
-//     SDL_Window* window = NULL;
-//     SDL_Renderer* renderer = NULL;
-
-//     if (!activateSDL(&window, &renderer))
-//     {
-//         return 1;
-//     }
-
-//     SDL_Event event;
-
-//     bool running = true;
-
-//     while (running)
-//     {
-//         while (SDL_PollEvent(&event))
-//         {
-//             if (event.type == SDL_QUIT)
-//             {
-//                 running = false;
-//             }
-//         }
-
-//         SDL_SetRenderDrawColor(renderer, 150, 200, 255, 100);
-//         SDL_RenderClear(renderer);
-
-
-//         SDL_SetRenderDrawColor(renderer, 100, 0, 0, 100);
-//         MakeCircle(renderer, CENTERX, CENTERY, radius);
-
-//         SDL_RenderPresent(renderer);
-//     }
-
-//     return 0;
-// }
-
 #include <bits/stdc++.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
@@ -103,6 +11,8 @@ const int INITIAL_LENGTH = 10;
 const int NUM_OBSTACLES = 5;
 const int BONUS_FOOD_INTERVAL = 5;
 const int BONUS_FOOD_DURATION = 5000;
+const int Poisonous_FOOD_INTERVAL = 4;
+const int Poisonous_FOOD_DURATION = 4000;
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
@@ -127,6 +37,12 @@ struct BonusFood {
     bool active;
     int spendtime; 
 };
+struct PoisonousFood {
+    int x, y;
+    bool active;
+    int spendtime;
+};
+
 
 Snake snake;
 Food food;
@@ -134,6 +50,9 @@ BonusFood bonusFood;
 vector<Obstacle> obstacles;
 int score = 0;
 int foodsEaten = 0;
+PoisonousFood poisonousFood;
+
+
 
 //5. circle shape
 void filledCircleRGBA(SDL_Renderer* renderer, int cx, int cy, int radius, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
@@ -172,8 +91,8 @@ void initialize() {
         Obstacle obstacle;
         obstacle.x = rand() % (SCREEN_WIDTH / GRID_SIZE) * GRID_SIZE;
         obstacle.y = rand() % (SCREEN_HEIGHT / GRID_SIZE) * GRID_SIZE;
-        obstacle.speedX = 2 + rand() % 5;
-        obstacle.speedY = 2 + rand() % 5;
+       // obstacle.speedX = 2 + rand() % 5;
+       // obstacle.speedY = 2 + rand() % 5;
         obstacles.push_back(obstacle);
     }
 }
@@ -201,7 +120,12 @@ void renderGameOver() {
 
     SDL_RenderPresent(renderer);
 }
-
+void generatePoisonousFood() {
+    poisonousFood.x = rand() % (SCREEN_WIDTH / GRID_SIZE) * GRID_SIZE;
+    poisonousFood.y = rand() % (SCREEN_HEIGHT / GRID_SIZE) * GRID_SIZE;
+    poisonousFood.active = true;
+    poisonousFood.spendtime = SDL_GetTicks();
+}
 void generateFood() {
     food.x = rand() % (SCREEN_WIDTH / GRID_SIZE) * GRID_SIZE;
     while(food.x<=GRID_SIZE/2 || food.x>=SCREEN_WIDTH-GRID_SIZE)
@@ -213,6 +137,9 @@ void generateFood() {
     {
         food.y = rand() % (SCREEN_HEIGHT / GRID_SIZE) * GRID_SIZE;
     }
+   //if (foodsEaten % 4==0 ) {
+        //generatePoisonousFood();
+    //}
 }
 
 // 3. bonus food
@@ -250,11 +177,11 @@ bool checkCollision(int x, int y) {
         cout << "x = " << x << endl;
         return true;
     }
-    for (const auto& obstacle : obstacles) {
-        if (obstacle.x == x && obstacle.y == y) {
-            return true;
-        }
-    }
+    // for (const auto& obstacle : obstacles) {
+    //     if (obstacle.x == x && obstacle.y == y) {
+    //         return true;
+    //     }
+    // }
 
     return false;
 }
@@ -276,6 +203,7 @@ void update() {
             newHead.first += GRID_SIZE;
             break;
     }
+    
 
     // 7. snake back
     if (newHead.first < 0) {
@@ -298,17 +226,17 @@ void update() {
         close();
         exit(1);
     }
-    //Check collision with obstacles
-    for (const auto& obstacle : obstacles) {
-        if (newHead.first < obstacle.x + GRID_SIZE && newHead.first + GRID_SIZE > obstacle.x &&
-            newHead.second < obstacle.y + GRID_SIZE && newHead.second + GRID_SIZE > obstacle.y) {
-            cout << score << endl;
-            renderGameOver();
-            SDL_Delay(2000); 
-            close();
-            exit(1);
-        }
-    }
+    // Check collision with obstacles
+    // for (const auto& obstacle : obstacles) {
+    //     if (newHead.first < obstacle.x + GRID_SIZE && newHead.first + GRID_SIZE > obstacle.x &&
+    //         newHead.second < obstacle.y + GRID_SIZE && newHead.second + GRID_SIZE > obstacle.y) {
+    //         cout << score << endl;
+    //         renderGameOver();
+    //         SDL_Delay(2000); 
+    //         close();
+    //         exit(1);
+    //     }
+    // }
 
     snake.body.insert(snake.body.begin(), newHead);
 
@@ -319,11 +247,28 @@ void update() {
         if (foodsEaten % BONUS_FOOD_INTERVAL == 0) {
             generateBonusFood();
         }
-    } else if ((newHead.first >= bonusFood.x-20&&newHead.first <= bonusFood.x) && (newHead.second >= bonusFood.y-20&&newHead.second <= bonusFood.y-20) && bonusFood.active) {
+        if (foodsEaten % 4 == 0) {
+            generatePoisonousFood();
+        }
+    } 
+     if ((newHead.first >= bonusFood.x-20&&newHead.first <= bonusFood.x) && (newHead.second >= bonusFood.y-20&&newHead.second <= bonusFood.y-20) && bonusFood.active) {
         generateFood();
         score += 50;
         bonusFood.active = false;
-    } else {
+    } 
+     if ((newHead.first >= poisonousFood.x - GRID_SIZE && newHead.first <= poisonousFood.x) && 
+             (newHead.second >= poisonousFood.y - GRID_SIZE && newHead.second <= poisonousFood.y - GRID_SIZE) && poisonousFood.active) {
+        poisonousFood.active = false; // Deactivate poisonous food
+        score -= 10;
+        if (score < 0) {
+            renderGameOver();
+            SDL_Delay(2000); 
+            close();
+            exit(1);
+        }
+    } 
+
+    else {
         snake.body.pop_back();
     }
 
@@ -331,7 +276,10 @@ void update() {
     if (bonusFood.active && SDL_GetTicks() - bonusFood.spendtime > BONUS_FOOD_DURATION) {
         bonusFood.active = false;
     }
-
+//poisonous food timer
+if (poisonousFood.active && SDL_GetTicks() - poisonousFood.spendtime > Poisonous_FOOD_DURATION) {
+        poisonousFood.active = false;
+    }
     // moving obst.
   for (auto& obstacle : obstacles) {
         obstacle.x -= obstacle.speedX;
@@ -350,8 +298,25 @@ void render() {
     //SDL_SetRenderDrawColor(renderer, 10, 100, 200, 255);//blue
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // black background
     SDL_RenderClear(renderer);
-    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // whitee snake
+    //SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // whitee snake
+ // Regular food rendering
+    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255); // Green color for regular food
+    SDL_Rect foodRect = {food.x, food.y, 12, 12};
+    SDL_RenderFillRect(renderer, &foodRect);
 
+    // Bonus food rendering
+    if (bonusFood.active) {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255); // Yellow color for bonus food
+        SDL_Rect bonusFoodRect = {bonusFood.x, bonusFood.y, GRID_SIZE, GRID_SIZE};
+        SDL_RenderFillRect(renderer, &bonusFoodRect);
+    }
+
+    // Poisonous food rendering
+    if (poisonousFood.active) {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255); // Red color for poisonous food
+        SDL_Rect poisonousFoodRect = {poisonousFood.x, poisonousFood.y, GRID_SIZE, GRID_SIZE};
+        SDL_RenderFillRect(renderer, &poisonousFoodRect);
+    }
     // changing the snake color and shape(pinkishh)
     for (int i = 0; i < snake.body.size(); ++i) {
         int colorValue = 255 - i * 10;
@@ -370,9 +335,9 @@ void render() {
 
     // food
 
-    SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
-    SDL_Rect foodRect = {food.x, food.y, 12, 12};
-    SDL_RenderFillRect(renderer, &foodRect);
+    //SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    //SDL_Rect foodRect = {food.x, food.y, 12, 12};
+    //SDL_RenderFillRect(renderer, &foodRect);
 
     // SDL_RenderDrawPoint(renderer, food.x + GRID_SIZE, food.y + GRID_SIZE);
     // SDL_RenderDrawPoint(renderer, food.x - GRID_SIZE, food.y + GRID_SIZE);
@@ -393,11 +358,11 @@ void render() {
     int obstacleSizex = 20 ; 
     int obstacleSizey = 20 ; // y coordinate e
 
-    for (const auto& obstacle : obstacles) {
-        //SDL_Rect obstacleRect = {obstacle.x, obstacle.y, GRID_SIZE, GRID_SIZE};
-        SDL_Rect obstacleRect = {obstacle.x, obstacle.y, obstacleSizex, obstacleSizey}; // for increasing obs,. size
-        SDL_RenderFillRect(renderer, &obstacleRect);
-    }
+    // for (const auto& obstacle : obstacles) {
+    //     // SDL_Rect obstacleRect = {obstacle.x, obstacle.y, GRID_SIZE, GRID_SIZE};
+    //     SDL_Rect obstacleRect = {obstacle.x, obstacle.y, obstacleSizex, obstacleSizey}; // for increasing obs,. size
+    //     SDL_RenderFillRect(renderer, &obstacleRect);
+    // }
 
     SDL_Rect obstacleRect = {0, 0, SCREEN_WIDTH, obstacleSizey}; // for increasing obs,. size
     SDL_RenderFillRect(renderer, &obstacleRect);
